@@ -96,7 +96,7 @@
       • <b>좌클릭</b> = 선택한 반 배정<br>
       • <b>우클릭</b> = 좌석 비우기<br>
       • 자동 저장(브라우저)<br>
-      • 좌석 종류: 일반 · <b>Tr</b>(빗금·인솔석) · <b>엑스트라</b>(윗선 굵음)
+      • 좌석 종류: <b>일반</b>(고정석) · <b>엑스트라</b>(사이드·뒷줄·아이슬)
     </div>
   </aside>
   <main class="board">
@@ -145,37 +145,38 @@ const DEPTS = [
 
 // ── 좌석 슬롯 지도 (물리적 위치, 불변) : null | {s:'fixed'|'tr'|'extra'}
 // 각 셀은 배정된 반 c 를 갖는다: {s, c:null|'E1'}
-const F = {s:'fixed'}, T = {s:'tr'}, X = {s:'extra'};
+// 모든 사이드/뒷줄 자리는 '엑스트라'로 통일 (Tr 구분 없음, 자리는 언제든 이동 가능)
+const F = {s:'fixed'}, T = {s:'extra'}, X = {s:'extra'};
 const SLOTS = {
   a: [
     [null, X,  X,  X,  X,  null],
-    [X,    F,  F,  F,  F,  X   ],
-    [T,    F,  F,  F,  F,  X   ],
-    [X,    F,  F,  F,  F,  X   ],
-    [X,    F,  F,  F,  F,  X   ],
-    [T,    F,  F,  F,  F,  X   ],
-    [X,    F,  F,  F,  F,  X   ],
-    [T,    F,  F,  F,  F,  X   ],
-    [X,    F,  F,  F,  F,  X   ],
-    [X,    F,  F,  F,  F,  X   ],
-    [T,    F,  F,  F,  F,  X   ],
-    [T,    F,  F,  F,  F,  X   ],
+    [X,    F,  F,  F,  F,  null],
+    [T,    F,  F,  F,  F,  null],
+    [X,    F,  F,  F,  F,  null],
+    [X,    F,  F,  F,  F,  null],
+    [T,    F,  F,  F,  F,  null],
+    [X,    F,  F,  F,  F,  null],
+    [T,    F,  F,  F,  F,  null],
+    [X,    F,  F,  F,  F,  null],
+    [X,    F,  F,  F,  F,  null],
+    [T,    F,  F,  F,  F,  null],
+    [T,    F,  F,  F,  F,  null],
     [null, X,  X,  X,  X,  null]
   ],
   b: [
     [null, X,  X,  X,  X,  null],
-    [X,    F,  F,  F,  F,  X   ],
-    [X,    F,  F,  F,  F,  X   ],
-    [X,    F,  F,  F,  F,  X   ],
-    [X,    F,  F,  F,  F,  X   ],
-    [X,    F,  F,  F,  F,  X   ],
-    [X,    F,  F,  F,  F,  X   ],
-    [X,    F,  F,  F,  F,  X   ],
-    [X,    F,  F,  F,  F,  X   ],
-    [X,    F,  F,  F,  F,  X   ],
-    [X,    F,  F,  F,  F,  X   ],
-    [X,    F,  F,  F,  F,  X   ],
-    [X,    F,  F,  F,  F,  X   ],
+    [X,    F,  F,  F,  F,  null],
+    [X,    F,  F,  F,  F,  null],
+    [X,    F,  F,  F,  F,  null],
+    [X,    F,  F,  F,  F,  null],
+    [X,    F,  F,  F,  F,  null],
+    [X,    F,  F,  F,  F,  null],
+    [X,    F,  F,  F,  F,  null],
+    [X,    F,  F,  F,  F,  null],
+    [X,    F,  F,  F,  F,  null],
+    [X,    F,  F,  F,  F,  null],
+    [X,    F,  F,  F,  F,  null],
+    [X,    F,  F,  F,  F,  null],
     [null, X,  X,  X,  T,  null]
   ],
   c: [
