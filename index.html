@@ -48,8 +48,8 @@
   .groups{display:flex;justify-content:center;align-items:flex-start;gap:5px;flex-wrap:wrap;margin:0 auto}
   .glabel{text-align:center;font-weight:700;color:#666;font-size:12px;margin-bottom:8px;letter-spacing:1px}
   .grid{display:grid;gap:5px}
-  #grid-a,#grid-b{grid-template-columns:repeat(5,54px)}
-  #grid-c{grid-template-columns:repeat(6,54px)}
+  #grid-a,#grid-b{grid-template-columns:repeat(5,var(--cell,54px))}
+  #grid-c{grid-template-columns:repeat(6,var(--cell,54px))}
   .seat{aspect-ratio:1.35/1;border-radius:4px;border:2px solid transparent;display:flex;align-items:center;
     justify-content:center;font-size:10.5px;color:#fff;font-weight:700;cursor:pointer;user-select:none;
     background:#d5d5d5;transition:transform .08s;line-height:1;position:relative}
@@ -67,7 +67,7 @@
   .seat.extra{border-top-width:5px;border-top-style:solid;border-top-color:#fff}
   .seat.teacher-seat{box-shadow:inset 0 0 0 2px rgba(255,255,255,0.85);font-size:9.5px}
   .media{margin:28px auto 0;max-width:440px;text-align:center}
-  .mgrid{display:grid;grid-template-columns:repeat(6,1fr);gap:5px}
+  .mgrid{display:grid;grid-template-columns:repeat(6,var(--cell,54px));gap:5px}
   .hint{color:#888;font-size:11.5px;margin-top:10px;line-height:1.6}
   .hint b{color:#555}
   .print-only{display:none}
@@ -469,9 +469,28 @@ document.getElementById('importJson').onclick = ()=>{
 };
 document.getElementById('print').onclick = ()=> window.print();
 
+function fitCells(){
+  const board = document.querySelector('.board');
+  if(!board) return;
+  const style = getComputedStyle(board);
+  const padX = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight);
+  const padY = parseFloat(style.paddingTop) + parseFloat(style.paddingBottom);
+  const bw = board.clientWidth - padX;
+  const bh = board.clientHeight - padY;
+  // 가로: 셀 16열(5+5+6) + 셀간 5px 갭 15개 + 그룹간 5px 갭 2개 = 85px
+  const cellByW = (bw - 85) / 16;
+  // 세로: STAGE(~50) + label(~20) + 13행 × (cell + 5) + MEDIA(~65) + 여유
+  const gridH = bh - 160;
+  const cellByH = (gridH - 13*5) / 13 * 1.35;
+  const cell = Math.max(28, Math.min(90, Math.floor(Math.min(cellByW, cellByH))));
+  document.documentElement.style.setProperty('--cell', cell + 'px');
+}
+window.addEventListener('resize', fitCells);
+
 state = loadState();
 renderClasses();
 renderAll();
+fitCells();
 </script>
 </body>
 </html>
