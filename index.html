@@ -1,0 +1,338 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LIS Chapel Seating — 2026 Fall</title>
+<style>
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:#f6f6f6;color:#222;
+    font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Pretendard','Apple SD Gothic Neo','Malgun Gothic',sans-serif;}
+  header{background:#fff;border-bottom:1px solid #e5e5e5;padding:14px 22px}
+  header h1{margin:0;font-size:20px;font-weight:800;letter-spacing:-.3px}
+  header .sub{color:#666;font-size:12.5px;margin-top:4px}
+  .app{display:flex;min-height:calc(100vh - 68px)}
+  .sidebar{width:280px;background:#fff;border-right:1px solid #e5e5e5;padding:14px;overflow-y:auto;flex-shrink:0}
+  .sidebar h3{font-size:11px;text-transform:uppercase;color:#888;margin:14px 0 6px;font-weight:700;letter-spacing:.5px}
+  .sidebar h3:first-child{margin-top:0}
+  .classes{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+  .cbtn{padding:12px 4px;border:2px solid transparent;border-radius:6px;cursor:pointer;color:#fff;
+    text-align:center;font-size:13px;font-weight:700;transition:transform .08s}
+  .cbtn:hover{transform:scale(1.06)}
+  .cbtn.active{outline:2px solid #000;outline-offset:2px}
+  .modes label{display:block;font-size:13px;padding:4px 0;cursor:pointer}
+  .modes input{margin-right:6px;vertical-align:-2px}
+  .actions button{display:block;width:100%;padding:8px;margin-bottom:5px;border:1px solid #ddd;background:#fff;
+    border-radius:5px;cursor:pointer;font-size:13px}
+  .actions button:hover{background:#f2f2f2}
+  .counts{font-size:11.5px;color:#333;line-height:1.7}
+  .counts .row{display:flex;align-items:center;gap:6px}
+  .counts .sw{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+  .totals{font-weight:700;font-size:12px;margin-top:8px;padding-top:8px;border-top:1px solid #eee}
+  .board{flex:1;padding:22px;overflow:auto}
+  .stage{text-align:center;letter-spacing:10px;font-weight:700;font-size:13px;color:#555;
+    padding:10px;background:#eee;border-radius:4px;max-width:900px;margin:0 auto 18px}
+  .groups{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;max-width:1240px;margin:0 auto}
+  .glabel{text-align:center;font-weight:700;color:#666;font-size:12px;margin-bottom:8px;letter-spacing:1px}
+  .grid{display:grid;gap:5px}
+  .seat{aspect-ratio:1.35/1;border-radius:4px;border:2px solid transparent;display:flex;align-items:center;
+    justify-content:center;font-size:10.5px;color:#fff;font-weight:700;cursor:pointer;user-select:none;
+    background:#d5d5d5;transition:transform .08s;line-height:1}
+  .seat:hover{transform:scale(1.08);z-index:2;position:relative}
+  .seat.hidden{visibility:hidden;pointer-events:none}
+  .seat.ph{background:transparent;border:1.5px dashed #c8c8c8;color:transparent}
+  .seat.ph:hover{border-color:#888}
+  .seat.tr{background-image:repeating-linear-gradient(45deg,rgba(255,255,255,.55) 0 4px,transparent 4px 8px);
+    border-style:dashed;border-color:#fff}
+  .seat.extra{border-top-width:5px;border-top-style:solid;border-top-color:#fff}
+  .media{margin:28px auto 0;max-width:440px;text-align:center}
+  .mgrid{display:grid;grid-template-columns:repeat(6,1fr);gap:5px}
+  .hint{color:#888;font-size:11.5px;margin-top:10px;line-height:1.6}
+  @media print{
+    .sidebar,header{display:none}
+    .board{padding:12px}
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>LIS Chapel Seating Arrangements</h1>
+  <div class="sub">2026 Fall Semester · 고정석 142석(A 4×12 · B 4×12 · C 4×10 · 방송실 6) + 엑스트라(사이드 44 · 뒷줄 12)</div>
+</header>
+<div class="app">
+  <aside class="sidebar">
+    <h3>클래스 선택</h3>
+    <div class="classes" id="classes"></div>
+    <h3>클릭 동작</h3>
+    <div class="modes">
+      <label><input type="radio" name="mode" value="assign" checked> 배정 (Assign)</label>
+      <label><input type="radio" name="mode" value="tr"> Tr 지정 (Trainee)</label>
+      <label><input type="radio" name="mode" value="extra"> 엑스트라(뒷줄) 지정</label>
+      <label><input type="radio" name="mode" value="clear"> 좌석 비우기</label>
+    </div>
+    <h3>동작</h3>
+    <div class="actions">
+      <button id="loadDefault">기본 배치 불러오기</button>
+      <button id="clearAll">모든 배정 지우기</button>
+      <button id="exportJson">JSON 내보내기</button>
+      <button id="importJson">JSON 불러오기</button>
+      <button id="print">인쇄 / PDF 저장</button>
+    </div>
+    <h3>클래스별 현황</h3>
+    <div class="counts" id="counts"></div>
+    <div class="hint">
+      • 자동 저장(브라우저)됩니다.<br>
+      • 좌석 클릭 = 선택한 클래스 / 모드 적용.<br>
+      • Tr = 통역·인솔자석(빗금).<br>
+      • 엑스트라 = 뒷줄/사이드 여분석(윗선 굵음).
+    </div>
+  </aside>
+  <main class="board">
+    <div class="stage">S T A G E</div>
+    <div class="groups">
+      <div>
+        <div class="glabel">GROUP A · 4×12 + EXTRA</div>
+        <div class="grid" id="grid-a" style="grid-template-columns:repeat(6,1fr)"></div>
+      </div>
+      <div>
+        <div class="glabel">GROUP B · 4×12 + EXTRA</div>
+        <div class="grid" id="grid-b" style="grid-template-columns:repeat(6,1fr)"></div>
+      </div>
+      <div>
+        <div class="glabel">GROUP C · 4×10 + EXTRA</div>
+        <div class="grid" id="grid-c" style="grid-template-columns:repeat(6,1fr)"></div>
+      </div>
+    </div>
+    <div class="media">
+      <div class="glabel">MEDIA DESK · 방송실 6석</div>
+      <div class="mgrid" id="grid-m"></div>
+    </div>
+  </main>
+</div>
+<script>
+const CLASSES = {
+  'E1':'#b8b8b8','E2':'#ee8524','E3':'#b18a12','E4':'#2f7d3a','E5':'#256238',
+  'M6':'#e57e75','M7':'#d3453a','M8':'#7b1f1f',
+  'H9':'#8b2fa6','H10':'#e6248a','H11':'#8b5535','H12':'#1a1a1a'
+};
+
+// DEFAULT LAYOUT (PDF 원본 배치 그대로)
+// null = 좌석 없음, 'P' = 빈 좌석(대기), {c:클래스, t?:'tr'|'extra'} = 배정
+const DEFAULT_LAYOUTS = {
+  a: [
+    [null,'P','P','P','P',null],
+    [null,{c:'E1'},{c:'E1'},{c:'E1'},{c:'E1'},null],
+    [{c:'E1',t:'tr'},{c:'E1'},{c:'E1'},{c:'E1'},{c:'E1'},null],
+    [null,{c:'E2'},{c:'E2'},{c:'E2'},{c:'E2'},null],
+    [null,{c:'E2'},{c:'E2'},{c:'E2'},{c:'E2'},null],
+    [{c:'E2',t:'tr'},{c:'E2'},{c:'E3'},{c:'E3'},{c:'E3'},null],
+    [null,{c:'E3'},{c:'E3'},{c:'E3'},{c:'E3'},null],
+    [{c:'E3',t:'tr'},{c:'E3'},{c:'E3'},{c:'E3'},{c:'E3'},null],
+    [null,{c:'E4'},{c:'E4'},{c:'E4'},{c:'E4'},null],
+    [null,{c:'E4'},{c:'E4'},{c:'E4'},{c:'E4'},null],
+    [{c:'E4',t:'tr'},{c:'E4'},{c:'E4'},{c:'E4'},{c:'E4'},null],
+    [{c:'E5',t:'tr'},{c:'E5'},{c:'E5'},{c:'E5'},{c:'E5'},null],
+    [null,{c:'E5',t:'extra'},{c:'E5',t:'extra'},{c:'E5',t:'extra'},{c:'E5',t:'extra'},null]
+  ],
+  b: [
+    [null,'P','P','P','P',null],
+    [null,{c:'H12'},{c:'H12'},{c:'H12'},{c:'H12'},null],
+    [null,{c:'H12'},{c:'H12'},{c:'H12'},{c:'H12'},null],
+    [null,{c:'H12'},{c:'H12'},{c:'H12'},{c:'H12'},null],
+    [null,{c:'H12'},{c:'H12'},{c:'M8'},{c:'M8'},null],
+    [null,{c:'M8'},{c:'M8'},{c:'M8'},{c:'M8'},null],
+    [null,{c:'M8'},{c:'M8'},{c:'M8'},{c:'M8'},null],
+    [null,{c:'M8'},{c:'M8'},{c:'M7'},{c:'M7'},null],
+    [null,{c:'M7'},{c:'M7'},{c:'M7'},{c:'M7'},null],
+    [null,{c:'M7'},{c:'M7'},{c:'M7'},{c:'M7'},null],
+    [null,{c:'M7'},{c:'M7'},{c:'M7'},{c:'M7'},null],
+    [null,{c:'M6'},{c:'M6'},{c:'M6'},{c:'M6'},null],
+    [null,{c:'M6'},{c:'M6'},{c:'M6'},{c:'M6'},null],
+    [null,{c:'M6',t:'extra'},{c:'M6',t:'extra'},{c:'M6',t:'extra'},{c:'M6',t:'tr'},null]
+  ],
+  c: [
+    [null,'P','P','P','P',null],
+    [null,{c:'H11'},{c:'H11'},{c:'H11'},{c:'H11'},null],
+    [null,{c:'H11'},{c:'H11'},{c:'H11'},{c:'H11'},{c:'H11',t:'tr'}],
+    [null,{c:'H9'},{c:'H9'},{c:'H9'},{c:'H9'},null],
+    [{c:'M8',t:'tr'},{c:'H9'},{c:'H9'},{c:'H9'},{c:'H9'},null],
+    [null,{c:'H9'},{c:'H9'},{c:'H9'},{c:'H9'},{c:'H9',t:'extra'}],
+    [null,{c:'H9'},{c:'H9'},{c:'H9'},{c:'H9'},{c:'H9',t:'tr'}],
+    [null,{c:'H10'},{c:'H10'},{c:'H10'},{c:'H10'},null],
+    [null,{c:'H10'},{c:'H10'},{c:'H10'},{c:'H10'},null],
+    [null,{c:'H10'},{c:'H10'},{c:'H10'},{c:'H10'},null],
+    [{c:'M7',t:'tr'},{c:'H10'},{c:'H10'},{c:'H10'},{c:'H10'},null],
+    [null,{c:'H10',t:'extra'},{c:'H10',t:'extra'},{c:'H10',t:'extra'},{c:'H10',t:'tr'},null]
+  ],
+  m: [{c:'H12'},{c:'H12'},{c:'H12'},{c:'H12',t:'tr'},{c:'H11'},{c:'H11'}]
+};
+
+const STORAGE_KEY = 'lis-chapel-seating-2026-fall';
+let state = null;
+let activeClass = 'E1';
+let mode = 'assign';
+
+function deepClone(o){ return JSON.parse(JSON.stringify(o)); }
+
+function loadState(){
+  const s = localStorage.getItem(STORAGE_KEY);
+  if(s){ try{ return JSON.parse(s); }catch(e){} }
+  return deepClone(DEFAULT_LAYOUTS);
+}
+function saveState(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+
+function renderClasses(){
+  const c = document.getElementById('classes');
+  c.innerHTML = '';
+  Object.entries(CLASSES).forEach(([cls,color])=>{
+    const b = document.createElement('div');
+    b.className = 'cbtn' + (cls===activeClass?' active':'');
+    b.style.background = color;
+    b.textContent = cls;
+    b.onclick = ()=>{ activeClass = cls; renderClasses(); };
+    c.appendChild(b);
+  });
+}
+
+function color(seat){
+  if(!seat || seat==='P') return null;
+  return CLASSES[seat.c] || '#888';
+}
+
+function makeSeat(seat, group, r, c){
+  const el = document.createElement('div');
+  el.className = 'seat';
+  if(!seat){ el.classList.add('hidden'); return el; }
+  if(seat==='P'){
+    el.classList.add('ph');
+    el.title = '빈 좌석 · 클릭하여 배정';
+  } else {
+    const col = color(seat);
+    el.style.background = col;
+    el.textContent = seat.c + (seat.t==='tr'?' Tr':'');
+    if(seat.t==='tr') el.classList.add('tr');
+    if(seat.t==='extra') el.classList.add('extra');
+    el.title = `${seat.c}${seat.t?' · '+seat.t:''} · 클릭하여 변경`;
+  }
+  el.onclick = ()=>handleClick(group,r,c);
+  return el;
+}
+
+function renderGrid(g){
+  const el = document.getElementById('grid-'+g);
+  el.innerHTML = '';
+  if(g==='m'){
+    state.m.forEach((s,i)=>el.appendChild(makeSeat(s,'m',0,i)));
+    return;
+  }
+  state[g].forEach((row,r)=>row.forEach((s,c)=>{
+    el.appendChild(makeSeat(s,g,r,c));
+  }));
+}
+
+function renderAll(){
+  renderGrid('a'); renderGrid('b'); renderGrid('c'); renderGrid('m');
+  renderCounts();
+}
+
+function handleClick(group,r,c){
+  const getSeat = ()=> group==='m' ? state.m[c] : state[group][r][c];
+  const setSeat = v => { if(group==='m') state.m[c]=v; else state[group][r][c]=v; };
+  const cur = getSeat();
+  if(cur===null) return;
+
+  if(mode==='clear'){
+    setSeat('P');
+  } else if(mode==='tr'){
+    setSeat({c:activeClass, t:'tr'});
+  } else if(mode==='extra'){
+    setSeat({c:activeClass, t:'extra'});
+  } else {
+    setSeat({c:activeClass});
+  }
+  saveState();
+  renderAll();
+}
+
+function renderCounts(){
+  const cnt = {};
+  Object.keys(CLASSES).forEach(k=>cnt[k]={fixed:0,extra:0,tr:0});
+  const scan = s=>{
+    if(!s||s==='P') return;
+    if(!cnt[s.c]) return;
+    if(s.t==='tr') cnt[s.c].tr++;
+    else if(s.t==='extra') cnt[s.c].extra++;
+    else cnt[s.c].fixed++;
+  };
+  ['a','b','c'].forEach(g=>state[g].forEach(row=>row.forEach(scan)));
+  state.m.forEach(scan);
+
+  let totalFixed=0, totalExtra=0, totalTr=0, emptyPh=0;
+  ['a','b','c'].forEach(g=>state[g].forEach(row=>row.forEach(s=>{ if(s==='P') emptyPh++; })));
+  state.m.forEach(s=>{ if(s==='P') emptyPh++; });
+
+  let html='';
+  Object.entries(cnt).forEach(([cls,x])=>{
+    totalFixed += x.fixed; totalExtra += x.extra; totalTr += x.tr;
+    const parts=[];
+    if(x.fixed) parts.push(`${x.fixed}`);
+    if(x.extra) parts.push(`+${x.extra}Ex`);
+    if(x.tr) parts.push(`+${x.tr}Tr`);
+    if(!parts.length) parts.push('—');
+    html += `<div class="row"><span class="sw" style="background:${CLASSES[cls]}"></span><b>${cls}</b>&nbsp;${parts.join(' ')}</div>`;
+  });
+  html += `<div class="totals">고정 ${totalFixed} · 엑스트라 ${totalExtra} · Tr ${totalTr}<br>빈좌석 ${emptyPh}</div>`;
+  document.getElementById('counts').innerHTML = html;
+}
+
+document.querySelectorAll('input[name=mode]').forEach(r=>{
+  r.onchange = ()=> mode = r.value;
+});
+
+document.getElementById('loadDefault').onclick = ()=>{
+  if(confirm('기본(PDF) 배치로 되돌립니다. 계속할까요?')){
+    state = deepClone(DEFAULT_LAYOUTS); saveState(); renderAll();
+  }
+};
+document.getElementById('clearAll').onclick = ()=>{
+  if(confirm('모든 좌석 배정을 지웁니다. 계속할까요?')){
+    ['a','b','c'].forEach(g=>state[g].forEach((row,ri)=>row.forEach((s,ci)=>{
+      if(s && s!=='P') state[g][ri][ci]='P';
+    })));
+    state.m.forEach((s,i)=>{ if(s && s!=='P') state.m[i]='P'; });
+    saveState(); renderAll();
+  }
+};
+document.getElementById('exportJson').onclick = ()=>{
+  const blob = new Blob([JSON.stringify(state,null,2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const d = new Date();
+  const stamp = d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0');
+  a.href = url;
+  a.download = `chapel-seating-${stamp}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+};
+document.getElementById('importJson').onclick = ()=>{
+  const input = document.createElement('input');
+  input.type='file'; input.accept='application/json';
+  input.onchange = e=>{
+    const f = e.target.files[0]; if(!f) return;
+    const rd = new FileReader();
+    rd.onload = ev=>{
+      try{ state = JSON.parse(ev.target.result); saveState(); renderAll(); }
+      catch(err){ alert('JSON 파일 형식 오류입니다.'); }
+    };
+    rd.readAsText(f);
+  };
+  input.click();
+};
+document.getElementById('print').onclick = ()=> window.print();
+
+state = loadState();
+renderClasses();
+renderAll();
+</script>
+</body>
+</html>
