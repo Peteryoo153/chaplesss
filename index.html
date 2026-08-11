@@ -56,14 +56,11 @@
   .seat:hover{transform:scale(1.08);z-index:2}
   .seat.hidden{visibility:hidden;pointer-events:none}
   /* 빈 좌석: 슬롯 타입별 스타일 */
-  .seat.empty.fixed{background:#eeeeee;border:1.5px solid #d0d0d0;color:#aaa}
-  .seat.empty.tr{background:#fafafa;border:1.5px dashed #b0b0b0;color:#aaa;
-    background-image:repeating-linear-gradient(45deg,rgba(0,0,0,.03) 0 4px,transparent 4px 8px)}
-  .seat.empty.extra{background:transparent;border:1.5px dashed #c8c8c8;color:transparent;
-    border-top-width:4px;border-top-style:solid;border-top-color:#c8c8c8}
-  .seat.empty:hover{border-color:#666;color:#666}
-  .seat.empty.tr::after,.seat.empty.extra::after{content:attr(data-slot);
-    position:absolute;font-size:8.5px;color:#999;font-weight:600;letter-spacing:.5px}
+  .seat.empty{color:#aaa;font-size:9.5px}
+  .seat.empty.fixed{background:#ececec;border:1px solid #d0d0d0}
+  .seat.empty.extra{background:#f6f6f6;border:1.5px dashed #b8b8b8;
+    border-top-width:3px;border-top-style:solid;border-top-color:#c8c8c8}
+  .seat.empty:hover{border-color:#666;color:#666;background:#e0e0e0}
   /* 배정된 좌석 */
   .seat.tr{background-image:repeating-linear-gradient(45deg,rgba(255,255,255,.55) 0 4px,transparent 4px 8px);
     border-style:dashed;border-color:#fff}
@@ -115,15 +112,15 @@
     <div class="groups">
       <div>
         <div class="glabel">GROUP A · 4×12 + EXTRA</div>
-        <div class="grid" id="grid-a" style="grid-template-columns:repeat(6,1fr)"></div>
+        <div class="grid" id="grid-a"></div>
       </div>
       <div>
         <div class="glabel">GROUP B · 4×12 + EXTRA</div>
-        <div class="grid" id="grid-b" style="grid-template-columns:repeat(6,1fr)"></div>
+        <div class="grid" id="grid-b"></div>
       </div>
       <div>
         <div class="glabel">GROUP C · 4×10 + EXTRA</div>
-        <div class="grid" id="grid-c" style="grid-template-columns:repeat(6,1fr)"></div>
+        <div class="grid" id="grid-c"></div>
       </div>
     </div>
     <div class="media">
@@ -276,8 +273,7 @@ function makeSeat(seat, group, r, ci){
   const slot = seat.s;
   if(!seat.c){
     el.classList.add('empty', slot);
-    if(slot==='tr'){ el.setAttribute('data-slot','Tr'); }
-    if(slot==='extra'){ el.setAttribute('data-slot','Ex'); }
+    if(slot==='extra') el.textContent = 'Ex';
   } else {
     const meta = CLASSES[seat.c];
     const col = meta?.color || '#888';
