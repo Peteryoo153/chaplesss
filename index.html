@@ -149,47 +149,47 @@ const F = {s:'fixed'}, T = {s:'tr'}, X = {s:'extra'};
 const SLOTS = {
   a: [
     [null, X,  X,  X,  X,  null],
-    [null, F,  F,  F,  F,  null],
-    [T,    F,  F,  F,  F,  null],
-    [null, F,  F,  F,  F,  null],
-    [null, F,  F,  F,  F,  null],
-    [T,    F,  F,  F,  F,  null],
-    [null, F,  F,  F,  F,  null],
-    [T,    F,  F,  F,  F,  null],
-    [null, F,  F,  F,  F,  null],
-    [null, F,  F,  F,  F,  null],
-    [T,    F,  F,  F,  F,  null],
-    [T,    F,  F,  F,  F,  null],
+    [X,    F,  F,  F,  F,  X   ],
+    [T,    F,  F,  F,  F,  X   ],
+    [X,    F,  F,  F,  F,  X   ],
+    [X,    F,  F,  F,  F,  X   ],
+    [T,    F,  F,  F,  F,  X   ],
+    [X,    F,  F,  F,  F,  X   ],
+    [T,    F,  F,  F,  F,  X   ],
+    [X,    F,  F,  F,  F,  X   ],
+    [X,    F,  F,  F,  F,  X   ],
+    [T,    F,  F,  F,  F,  X   ],
+    [T,    F,  F,  F,  F,  X   ],
     [null, X,  X,  X,  X,  null]
   ],
   b: [
     [null, X,  X,  X,  X,  null],
-    [null, F,  F,  F,  F,  null],
-    [null, F,  F,  F,  F,  null],
-    [null, F,  F,  F,  F,  null],
-    [null, F,  F,  F,  F,  null],
-    [null, F,  F,  F,  F,  null],
-    [null, F,  F,  F,  F,  null],
-    [null, F,  F,  F,  F,  null],
-    [null, F,  F,  F,  F,  null],
-    [null, F,  F,  F,  F,  null],
-    [null, F,  F,  F,  F,  null],
-    [null, F,  F,  F,  F,  null],
-    [null, F,  F,  F,  F,  null],
+    [X,    F,  F,  F,  F,  X   ],
+    [X,    F,  F,  F,  F,  X   ],
+    [X,    F,  F,  F,  F,  X   ],
+    [X,    F,  F,  F,  F,  X   ],
+    [X,    F,  F,  F,  F,  X   ],
+    [X,    F,  F,  F,  F,  X   ],
+    [X,    F,  F,  F,  F,  X   ],
+    [X,    F,  F,  F,  F,  X   ],
+    [X,    F,  F,  F,  F,  X   ],
+    [X,    F,  F,  F,  F,  X   ],
+    [X,    F,  F,  F,  F,  X   ],
+    [X,    F,  F,  F,  F,  X   ],
     [null, X,  X,  X,  T,  null]
   ],
   c: [
     [null, X,  X,  X,  X,  null],
-    [null, F,  F,  F,  F,  null],
-    [null, F,  F,  F,  F,  T   ],
-    [null, F,  F,  F,  F,  null],
-    [T,    F,  F,  F,  F,  null],
-    [null, F,  F,  F,  F,  X   ],
-    [null, F,  F,  F,  F,  T   ],
-    [null, F,  F,  F,  F,  null],
-    [null, F,  F,  F,  F,  null],
-    [null, F,  F,  F,  F,  null],
-    [T,    F,  F,  F,  F,  null],
+    [X,    F,  F,  F,  F,  X   ],
+    [X,    F,  F,  F,  F,  T   ],
+    [X,    F,  F,  F,  F,  X   ],
+    [T,    F,  F,  F,  F,  X   ],
+    [X,    F,  F,  F,  F,  X   ],
+    [X,    F,  F,  F,  F,  T   ],
+    [X,    F,  F,  F,  F,  X   ],
+    [X,    F,  F,  F,  F,  X   ],
+    [X,    F,  F,  F,  F,  X   ],
+    [T,    F,  F,  F,  F,  X   ],
     [null, X,  X,  X,  T,  null]
   ],
   m: [F,F,F,T,F,F]
@@ -205,12 +205,28 @@ let state = null;
 let activeClass = 'E1';
 
 function loadState(){
+  const fresh = makeEmptyState();
   const s = localStorage.getItem(STORAGE_KEY);
-  if(s){ try{
+  if(!s) return fresh;
+  try{
     const p = JSON.parse(s);
-    if(p && p.a && p.b && p.c && p.m) return p;
-  }catch(e){} }
-  return makeEmptyState();
+    if(!p) return fresh;
+    // 새 레이아웃 위에 이전 배정(c값)만 병합 — 좌석 구조가 바뀌어도 배정은 유지
+    ['a','b','c'].forEach(g => {
+      if(!Array.isArray(p[g])) return;
+      fresh[g].forEach((row, r) => row.forEach((cell, ci) => {
+        const old = p[g]?.[r]?.[ci];
+        if(cell && old && old.c) cell.c = old.c;
+      }));
+    });
+    if(Array.isArray(p.m)){
+      fresh.m.forEach((cell, i) => {
+        const old = p.m[i];
+        if(cell && old && old.c) cell.c = old.c;
+      });
+    }
+    return fresh;
+  }catch(e){ return fresh; }
 }
 function saveState(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
 
