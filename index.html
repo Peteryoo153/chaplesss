@@ -160,48 +160,46 @@ const TEACHER_CLASSES = Object.keys(CLASSES).filter(k => CLASSES[k].role==='T');
 const F = {s:'fixed'}, T = {s:'extra'}, X = {s:'extra'};
 const SLOTS = {
   a: [
-    [null, X, X, X, X],
-    [X,    F, F, F, F],
-    [X,    F, F, F, F],
-    [X,    F, F, F, F],
-    [X,    F, F, F, F],
-    [X,    F, F, F, F],
-    [X,    F, F, F, F],
-    [X,    F, F, F, F],
-    [X,    F, F, F, F],
-    [X,    F, F, F, F],
-    [X,    F, F, F, F],
-    [X,    F, F, F, F],
+    [X, F, F, F, F],
+    [X, F, F, F, F],
+    [X, F, F, F, F],
+    [X, F, F, F, F],
+    [X, F, F, F, F],
+    [X, F, F, F, F],
+    [X, F, F, F, F],
+    [X, F, F, F, F],
+    [X, F, F, F, F],
+    [X, F, F, F, F],
+    [X, F, F, F, F],
+    [X, F, F, F, F],
     [null, X, X, X, X]
   ],
   b: [
-    [null, X, X, X, X],
-    [X,    F, F, F, F],
-    [X,    F, F, F, F],
-    [X,    F, F, F, F],
-    [X,    F, F, F, F],
-    [X,    F, F, F, F],
-    [X,    F, F, F, F],
-    [X,    F, F, F, F],
-    [X,    F, F, F, F],
-    [X,    F, F, F, F],
-    [X,    F, F, F, F],
-    [X,    F, F, F, F],
-    [X,    F, F, F, F],
+    [X, F, F, F, F],
+    [X, F, F, F, F],
+    [X, F, F, F, F],
+    [X, F, F, F, F],
+    [X, F, F, F, F],
+    [X, F, F, F, F],
+    [X, F, F, F, F],
+    [X, F, F, F, F],
+    [X, F, F, F, F],
+    [X, F, F, F, F],
+    [X, F, F, F, F],
+    [X, F, F, F, F],
     [null, X, X, X, X]
   ],
   c: [
-    [null, X, X, X, X, null],
-    [X,    F, F, F, F, X   ],
-    [X,    F, F, F, F, X   ],
-    [X,    F, F, F, F, X   ],
-    [X,    F, F, F, F, X   ],
-    [X,    F, F, F, F, X   ],
-    [X,    F, F, F, F, X   ],
-    [X,    F, F, F, F, X   ],
-    [X,    F, F, F, F, X   ],
-    [X,    F, F, F, F, X   ],
-    [X,    F, F, F, F, X   ],
+    [X, F, F, F, F, X],
+    [X, F, F, F, F, X],
+    [X, F, F, F, F, X],
+    [X, F, F, F, F, X],
+    [X, F, F, F, F, X],
+    [X, F, F, F, F, X],
+    [X, F, F, F, F, X],
+    [X, F, F, F, F, X],
+    [X, F, F, F, F, X],
+    [X, F, F, F, F, X],
     [null, X, X, X, X, null]
   ],
   m: [F,F,F,F,F,F]
@@ -212,7 +210,7 @@ function makeEmptyState(){
   return {a:clone(SLOTS.a), b:clone(SLOTS.b), c:clone(SLOTS.c), m:clone(SLOTS.m)};
 }
 
-const STORAGE_KEY = 'lis-chapel-seating-2026-fall-v2';
+const STORAGE_KEY = 'lis-chapel-seating-2026-fall-v3';
 let state = null;
 let activeClass = 'E1';
 
